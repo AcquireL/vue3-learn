@@ -1,0 +1,31 @@
+{
+  "name": "vue3-learn",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "aieditor": "^1.2.7",
+    "ant-design-vue": "^4.2.6",
+    "axios": "^1.7.8",
+    "chart.js": "^4.4.7",
+    "echarts": "^5.5.1",
+    "http-server": "^14.1.1",
+    "mockjs": "^1.1.0",
+    "vue": "^3.5.13",
+    "vue-chartjs": "^5.3.2",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/mockjs": "^1.0.10",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "axios-mock-adapter": "^2.1.0",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.1",
+    "vue-tsc": "^2.1.10"
+  }
+}
