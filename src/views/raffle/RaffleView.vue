@@ -1,42 +1,62 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+
+const props = defineProps<{ options?: string[] }>();
+
+const defaultOptions = [
+  '奖品 A', '奖品 B', '奖品 C', '谢谢参与', '奖品 D', '奖品 E'
+];
+
+const options = computed(() => props.options && props.options.length > 0 ? props.options : defaultOptions);
+
+const spinning = ref(false);
+const degree = ref(0);
+const audio = new Audio('spin-sound.mp3'); // 添加音效
+
+const segmentAngle = computed(() => 360 / options.value.length);
+const colors = ['#FFDDC1', '#FFABAB', '#FFC3A0', '#D5AAFF', '#85E3FF', '#B9FBC0'];
+
+const getSegmentStyle = (index: number) => {
+  return {
+    transform: `rotate(${index * segmentAngle.value}deg)`,
+    background: colors[index % colors.length],
+    clipPath: 'polygon(50% 50%, 100% 0, 100% 50%, 50% 50%)', // 确保扇形均匀分布
+  };
+};
+
+const getLabelStyle = (index: number) => {
+  return {
+    transform: `rotate(${index * segmentAngle.value + segmentAngle.value / 2}deg) translate(90px) rotate(900deg)`,
+  };
+};
+
+const spin = () => {
+  if (spinning.value) return;
+  spinning.value = true;
+
+  audio.play(); // 播放音效
+
+  const extraRotation = 360 * 5; // 额外旋转 5 圈
+  const randomStop = Math.floor(Math.random() * 360); // 随机停止角度
+  degree.value += extraRotation + randomStop;
+
+  setTimeout(() => {
+    spinning.value = false;
+  }, 3000);
+};
+</script>
+
 <template>
   <div class="wheel-container">
-    <div ref="wheel" class="wheel" :style="{ transform: `rotate(${rotation}deg)` }">
-      <!-- 这里添加分割扇区的代码 -->
+    <div class="pointer"></div>
+    <div class="wheel" :style="{ transform: `rotate(${degree}deg)`, transition: spinning ? 'transform 3s cubic-bezier(0.25, 1, 0.5, 1)' : 'none' }">
+      <div v-for="(option, index) in options" :key="index" class="segment" :style="getSegmentStyle(index)">
+        <span class="segment-label" :style="getLabelStyle(index)">{{ option }}</span>
+      </div>
     </div>
-    <div class="pointer">↑</div>
-    <button @click="startSpin">开始</button>
+    <button @click="spin" :disabled="spinning">旋转</button>
   </div>
 </template>
-
-<script>
-import { ref, onMounted } from 'vue';
-import gsap from 'gsap';
-
-export default {
-  setup() {
-    let rotation = ref(0);
-    const wheel = ref(null);
-
-    const startSpin = () => {
-      const targetRotation = rotation.value + (Math.random() * 3600 + 3600); // 随机旋转角度
-      gsap.to(wheel.value, {
-        duration: 4,
-        rotation: targetRotation,
-        ease: "elastic.out(1, 0.3)",
-        onComplete: () => {
-          rotation.value = targetRotation % 360;
-        }
-      });
-    };
-
-    onMounted(() => {
-      // 初始化代码
-    });
-
-    return { rotation, wheel, startSpin };
-  }
-}
-</script>
 
 <style scoped>
 .wheel-container {
@@ -44,25 +64,60 @@ export default {
   width: 300px;
   height: 300px;
 }
-
+.pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 20px;
+  height: 40px;
+  background: red;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  transform: translateX(-50%);
+  z-index: 10;
+}
 .wheel {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 10px solid #333;
-  background-color: #f3f3f3;
-  transition: transform 4s cubic-bezier(.7, -.1, .9, .8);
+  border: 5px solid black;
+  position: relative;
+  background: white;
+  overflow: hidden;
 }
-
-.pointer {
+.segment {
   position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-bottom: 40px solid red;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform-origin: 50% 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.segment-label {
+  position: absolute;
+  transform-origin: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: black;
+  white-space: nowrap;
+}
+button {
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: blue;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+button:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+button:hover:not(:disabled) {
+  background-color: darkblue;
 }
 </style>
